@@ -13,7 +13,7 @@ jobs:
   publish:
     name: Publish Release
     runs-on: ubuntu-latest
-    if: "!contains(github.ref, 'rc') && !contains(github.ref, 'a') && !contains(github.ref, 'b')"
+    if: "!contains(github.ref_name, 'rc') && !contains(github.ref_name, 'a') && !contains(github.ref_name, 'b')"
     environment: pypi-release
 
     steps:
@@ -70,7 +70,7 @@ jobs:
   publish-testpypi:
     name: Publish Pre-release to TestPyPI
     runs-on: ubuntu-latest
-    if: "contains(github.ref, 'rc') || contains(github.ref, 'a') || contains(github.ref, 'b')"
+    if: "contains(github.ref_name, 'rc') || contains(github.ref_name, 'a') || contains(github.ref_name, 'b')"
     environment: testpypi-release
 
     steps:
