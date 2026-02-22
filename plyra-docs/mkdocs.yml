@@ -1,0 +1,104 @@
+site_name: Plyra Guard
+site_description: Production-grade action middleware for agentic AI
+site_url: https://plyraai.github.io/plyra-guard
+repo_url: https://github.com/plyraAI/plyra-guard
+repo_name: plyraAI/plyra-guard
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  custom_dir: docs/overrides
+  palette:
+    - scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    - scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+  font:
+    text: DM Sans
+    code: JetBrains Mono
+  logo: assets/logo-mark.svg
+  favicon: assets/favicon.svg
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - toc.follow
+
+extra_css:
+  - stylesheets/extra.css
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/plyraAI/plyra-guard
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/plyra-guard
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/plyraAI
+  version:
+    provider: mike
+
+plugins:
+  - search
+  - autorefs
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - attr_list
+  - md_in_html
+  - tables
+  - footnotes
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Quickstart: getting-started/quickstart.md
+    - Core Concepts: getting-started/concepts.md
+  - Guides:
+    - Policy Configuration: guides/policy-config.md
+    - Dashboard & Sidecar: guides/dashboard.md
+  - Integrations:
+    - Overview: integrations/index.md
+    - LangGraph: integrations/langgraph.md
+    - AutoGen: integrations/autogen.md
+    - CrewAI: integrations/crewai.md
+  - API Reference:
+    - ActionGuard: api/action-guard.md
+    - Policy: api/policy.md
+    - Adapters: api/adapters.md
