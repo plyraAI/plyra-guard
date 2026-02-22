@@ -35,13 +35,15 @@ jobs:
         run: uv run pytest tests/ -v --tb=short
 
       - name: Build package
-        run: uv build
+        run: |
+          rm -rf dist/
+          uv build
 
       - name: Verify build artifacts
         run: |
           ls -la dist/
-          test -f dist/plyra_guard-*.whl
-          test -f dist/plyra_guard-*.tar.gz
+          ls dist/plyra_guard-*.whl > /dev/null
+          ls dist/plyra_guard-*.tar.gz > /dev/null
 
       - name: Publish to PyPI (Trusted Publisher)
         uses: pypa/gh-action-pypi-publish@release/v1
@@ -90,13 +92,15 @@ jobs:
         run: uv run pytest tests/ -v --tb=short
 
       - name: Build package
-        run: uv build
+        run: |
+          rm -rf dist/
+          uv build
 
       - name: Verify build artifacts
         run: |
           ls -la dist/
-          test -f dist/plyra_guard-*.whl
-          test -f dist/plyra_guard-*.tar.gz
+          ls dist/plyra_guard-*.whl > /dev/null
+          ls dist/plyra_guard-*.tar.gz > /dev/null
 
       - name: Publish to TestPyPI (Trusted Publisher)
         uses: pypa/gh-action-pypi-publish@release/v1
