@@ -44,6 +44,7 @@ dependencies = [
     "pyyaml>=6.0",
     "python-dateutil",
     "typing-extensions",
+    "pyyaml>=6.0",
 ]
 
 [project.optional-dependencies]
