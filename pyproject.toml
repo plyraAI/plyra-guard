@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "plyra-guard"
-version = "0.1.3"
+version = "0.1.4"
 description = "Production-grade action middleware for agentic AI — by Plyra"
 readme = "README.md"
 license = { text = "Apache-2.0" }
@@ -88,13 +88,6 @@ Documentation = "https://docs.plyra.dev/guard"
 Repository = "https://github.com/plyra/plyra-guard"
 Issues = "https://github.com/plyra/plyra-guard/issues"
 Changelog = "https://github.com/plyra/plyra-guard/blob/main/CHANGELOG.md"
-
-[tool.setuptools.packages.find]
-include = ["plyra_guard*", "plyra*"]
-
-[tool.setuptools.package-data]
-plyra_guard = ["py.typed", "dashboard/templates/**/*.html"]
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
@@ -124,12 +117,7 @@ disable_error_code = ["import-untyped"]
 [tool.hatch.build.targets.wheel]
 packages = ["plyra_guard"]
 
+[tool.hatch.build.targets.wheel.shared-data]
+
 [tool.hatch.build.targets.sdist]
-exclude = [
-  "/.github",
-  "/tests",
-  "/docs",
-  "/examples",
-  "*.gitignore",
-  ".gitignore",
-]
+exclude = ["/.github", "/tests", "/docs", "/examples", ".gitignore"]
