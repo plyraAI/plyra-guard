@@ -280,6 +280,7 @@ class TestDashboard:
         data = resp.json()
         assert data["status"] == "ok"
         from plyra_guard import __version__
+
         assert data["version"] == __version__
         assert data["actions_total"] == len(entries)
         assert isinstance(data["uptime_s"], float)
