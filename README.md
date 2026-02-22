@@ -266,7 +266,7 @@ When moving from local development to production, please note the following defa
 We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ```bash
-git clone https://github.com/plyra/plyra-guard.git
+git clone https://github.com/plyraAI/plyra-guard.git
 cd plyra-guard
 pip install -e ".[dev,sidecar]"
 pytest tests/ -v

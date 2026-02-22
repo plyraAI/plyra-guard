@@ -24,11 +24,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install docs dependencies
-        run: |
-          pip install \
-            "mkdocs<2.0" \
-            mkdocs-material \
-            mkdocs-autorefs
+        run: pip install -r docs/requirements-docs.txt
 
       - name: Build and deploy
         working-directory: plyra-docs

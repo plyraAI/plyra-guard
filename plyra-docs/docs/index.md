@@ -93,3 +93,7 @@ delete_file("/etc/passwd")  # → PolicyViolationError
 | OpenAI | ✅ | Function call interceptor |
 | Anthropic | ✅ | Tool use interceptor |
 | Plain Python | ✅ | `@guard.wrap` decorator |
+
+## Coming Soon: plyra-memory
+
+Persistent, structured memory for AI agents — episodic context, semantic recall, and working state across sessions. Works with any agent framework. [Learn more at plyra.ai](https://plyraai.github.io) and star the [GitHub org](https://github.com/plyraAI) for updates.

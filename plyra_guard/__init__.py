@@ -2,7 +2,7 @@
 plyra-guard — Action safety middleware for agentic AI.
 
 Part of the Plyra infrastructure suite.
-https://plyra.dev · https://github.com/plyra/plyra-guard
+https://plyra.dev · https://github.com/plyraAI/plyra-guard
 
 plyra-guard sits between any AI agent's decision engine and the actual
 execution of tools/actions, providing:

@@ -85,9 +85,9 @@ plyra-guard = "plyra_guard.cli:main"
 [project.urls]
 Homepage = "https://plyra.dev"
 Documentation = "https://docs.plyra.dev/guard"
-Repository = "https://github.com/plyra/plyra-guard"
-Issues = "https://github.com/plyra/plyra-guard/issues"
-Changelog = "https://github.com/plyra/plyra-guard/blob/main/CHANGELOG.md"
+Repository = "https://github.com/plyraAI/plyra-guard"
+Issues = "https://github.com/plyraAI/plyra-guard/issues"
+Changelog = "https://github.com/plyraAI/plyra-guard/blob/main/CHANGELOG.md"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]

@@ -37,7 +37,7 @@ The following are considered security-relevant for ActionGuard:
 
 ### What Does NOT Qualify
 
-- Bugs that do not have a security impact (use [GitHub Issues](https://github.com/plyra/plyra-guard/issues) instead)
+- Bugs that do not have a security impact (use [GitHub Issues](https://github.com/plyraAI/plyra-guard/issues) instead)
 - Feature requests
 - Performance issues (unless they enable a denial-of-service attack)
 

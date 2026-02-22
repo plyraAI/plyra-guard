@@ -23,7 +23,7 @@ We use [uv](https://github.com/astral-sh/uv) for dependency management:
 
 ```bash
 # Clone the repository
-git clone https://github.com/plyra/plyra-guard.git
+git clone https://github.com/plyraAI/plyra-guard.git
 cd actionguard
 
 # Install all dependencies (including dev and optional extras)
@@ -331,4 +331,4 @@ class MyHandler(BaseRollbackHandler):
 
 ## Questions?
 
-If you're unsure about anything, open a [discussion](https://github.com/plyra/plyra-guard/discussions) or ask in your PR. We're happy to help!
+If you're unsure about anything, open a [discussion](https://github.com/plyraAI/plyra-guard/discussions) or ask in your PR. We're happy to help!
