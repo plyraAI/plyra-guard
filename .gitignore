@@ -76,9 +76,10 @@ plyra_guard_snapshots_*/
 error.txt
 
 # ── Docs Build ───────────────────────────────────────────────────
-site/
-docs/_build/
-docs/api/
+/site/
+/docs/_build/
+/docs/api/
+plyra-docs/site/
 
 # ── Secrets / Keys ───────────────────────────────────────────────
 *.pem
