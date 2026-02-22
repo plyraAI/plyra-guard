@@ -19,9 +19,13 @@ def main() -> None:
         prog="plyra-guard",
         description="plyra-guard — Action safety middleware for agentic AI",
     )
+    from plyra_guard import __version__
+
     parser.add_argument(
         "--version",
-        action="store_true",
+        "-V",
+        action="version",
+        version=f"plyra-guard {__version__} (Plyra Agentic Infrastructure)",
         help="Show version and exit",
     )
     subparsers = parser.add_subparsers(dest="command")
@@ -133,11 +137,9 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    if args.version:
-        from plyra_guard import __version__
-
-        print(f"plyra-guard {__version__} (Plyra Agentic Infrastructure)")
-        return
+    if not args.command:
+        parser.print_help()
+        sys.exit(1)
 
     if args.command == "serve":
         _run_serve(args)
