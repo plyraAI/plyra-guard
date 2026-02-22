@@ -54,7 +54,7 @@ from plyra_guard.rollback.handlers.base_handler import (
     Snapshot,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.1.3"
 __author__ = "Plyra"
 __license__ = "Apache-2.0"
 __url__ = "https://plyra.dev"
