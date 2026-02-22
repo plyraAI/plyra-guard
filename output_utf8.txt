@@ -1,0 +1,26 @@
+﻿============================================================
+ActionGuard ù LangGraph Integration Example
+============================================================
+
+[INFO] Created GuardedToolNode with 2 tools.
+
+Simulating a LangGraph state update containing two tool calls:
+  1. execute_command(command='rm -rf /')  <-- Should be BLOCKED
+  2. search_web(query='AI safety guidelines') <-- Should be ALLOWED
+
+Exception during LLM tool execution:
+Traceback (most recent call last):
+  File "A:\ActionGuard\examples\langgraph_integration.py", line 150, in main
+    results = tool_node.invoke(state)
+  File "A:\ActionGuard\examples\langgraph_integration.py", line 79, in invoke
+    parent_result = super().invoke(safe_input, config, **kwargs)
+  File "C:\Users\padal\AppData\Roaming\Python\Python313\site-packages\langgraph\_internal\_runnable.py", line 368, in invoke
+    raise ValueError(
+        f"Missing required config key '{runtime_key}' for '{self.name}'."
+    )
+ValueError: Missing required config key 'N/A' for 'tools'.
+
+-- ActionGuard Audit Summary --
+
+============================================================
+Done!

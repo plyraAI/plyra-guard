@@ -1,0 +1,2 @@
+[console_scripts]
+plyra-guard = plyra_guard.cli:main

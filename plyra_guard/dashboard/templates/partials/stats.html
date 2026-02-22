@@ -1,0 +1,30 @@
+<div class="stat-card">
+    <div class="stat-label">TOTAL ACTIONS</div>
+    <div class="stat-value">{{ "{:,}".format(stats.total_actions) }}</div>
+    <div
+        class="stat-delta {% if stats.delta_5min > 0 %}delta-pos{% elif stats.delta_5min < 0 %}delta-neg{% else %}delta-zero{% endif %}">
+        {% if stats.delta_5min > 0 %}+{% endif %}{{ stats.delta_5min }} in last 5min
+    </div>
+</div>
+
+<div class="stat-card">
+    <div class="stat-label">BLOCKED</div>
+    <div class="stat-value">{{ "{:,}".format(stats.total_blocked) }}</div>
+    <div class="stat-delta delta-zero">{{ stats.blocked_pct }}%</div>
+</div>
+
+<div class="stat-card">
+    <div class="stat-label">ESCALATED</div>
+    <div class="stat-value">{{ "{:,}".format(stats.total_escalated) }}</div>
+    <div class="stat-delta delta-zero">{{ stats.escalated_pct }}%</div>
+</div>
+
+<div class="stat-card">
+    <div class="stat-label">AVG RISK SCORE</div>
+    <div class="stat-value">{{ "%.2f"|format(stats.avg_risk_score) }}</div>
+    <div
+        class="stat-delta {% if stats.avg_risk_score > 0.8 %}delta-neg{% elif stats.avg_risk_score > 0.5 %}delta-pos{% else %}delta-zero{% endif %}">
+        {% if stats.delta_blocked_5min > 0 %}+{{ stats.delta_blocked_5min }} blocked{% else %}0 blocked{% endif %} in
+        5min
+    </div>
+</div>

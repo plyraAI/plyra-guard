@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Stat Cards -->
+<div id="stats-grid" class="stats-grid"
+     hx-get="/dashboard/stats"
+     hx-trigger="every 5s"
+     hx-swap="innerHTML">
+  {% include "partials/stats.html" %}
+</div>
+
+<!-- Chart -->
+<div class="chart-wrap">
+  <div id="chart-container"
+       hx-get="/dashboard/chart.svg"
+       hx-trigger="every 30s"
+       hx-swap="innerHTML">
+    {{ chart_svg | safe }}
+  </div>
+</div>
+
+<!-- Live Feed -->
+<div class="feed-section">
+  <div class="section-title">LIVE ACTION FEED</div>
+  <div hx-ext="sse"
+       sse-connect="/dashboard/feed/stream"
+       sse-swap="action"
+       hx-target="#feed-list"
+       hx-swap="afterbegin"></div>
+  <div id="feed-list">
+    {% include "partials/feed.html" %}
+  </div>
+</div>
+
+<!-- Agent Table -->
+<div>
+  <div class="section-title">AGENT BREAKDOWN</div>
+  <table class="agents-table">
+    <thead>
+      <tr>
+        <th>STATUS</th>
+        <th>AGENT</th>
+        <th>TRUST</th>
+        <th>ACTIONS</th>
+        <th>BLOCKED</th>
+        <th>BUDGET</th>
+      </tr>
+    </thead>
+    <tbody id="agents-table-body"
+           hx-get="/dashboard/agents"
+           hx-trigger="every 10s"
+           hx-swap="innerHTML">
+      {% include "partials/agents.html" %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+// Trim feed list to max 100 rows
+(function(){
+  const obs = new MutationObserver(function(){
+    const list = document.getElementById('feed-list');
+    if (!list) return;
+    while (list.children.length > 100) {
+      list.removeChild(list.lastChild);
+    }
+  });
+  const target = document.getElementById('feed-list');
+  if (target) obs.observe(target, {childList: true});
+})();
+</script>
+{% endblock %}

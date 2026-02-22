@@ -1,0 +1,142 @@
+name: plyra-guard CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Lint — ruff check
+        run: uv run ruff check .
+
+      - name: Lint — ruff format
+        run: uv run ruff format --check .
+
+      - name: Type check — mypy
+        run: uv run mypy plyra_guard/ --ignore-missing-imports
+
+      - name: Test — pytest
+        run: |
+          uv run pytest tests/ -v --tb=short \
+            --cov=plyra_guard \
+            --cov-report=xml \
+            --cov-report=term-missing
+
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == '3.13'
+        uses: codecov/codecov-action@v4
+        with:
+          file: coverage.xml
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  build-check:
+    name: Build & Install Check
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Set up Python
+        run: uv python install 3.13
+
+      - name: Build package
+        run: uv build
+
+      - name: Verify build artifacts
+        run: |
+          ls -la dist/
+          test -f dist/plyra_guard-*.whl
+          test -f dist/plyra_guard-*.tar.gz
+          echo "✅ Both wheel and sdist created"
+
+      - name: Install wheel in fresh venv and verify
+        run: |
+          uv venv /tmp/test_install
+          source /tmp/test_install/bin/activate
+          pip install dist/plyra_guard-*.whl
+          python -c "
+          from plyra_guard import ActionGuard, __version__
+          g = ActionGuard.default()
+          print(f'plyra-guard {__version__} OK')
+          assert __version__ == '0.1.0', f'Version mismatch: {__version__}'
+          "
+          echo "✅ Package installs and imports correctly"
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Set up Python
+        run: uv python install 3.13
+
+      - name: Install security tools
+        run: |
+          uv venv /tmp/security_scan
+          source /tmp/security_scan/bin/activate
+          pip install bandit safety
+
+      - name: Run Bandit (static analysis)
+        run: |
+          source /tmp/security_scan/bin/activate
+          bandit -r plyra_guard/ -ll -f json -o bandit-report.json || true
+          bandit -r plyra_guard/ -ll
+        continue-on-error: true
+
+      - name: Run Safety (dependency CVE check)
+        run: |
+          source /tmp/security_scan/bin/activate
+          safety check || true
+        continue-on-error: true
+
+      - name: Upload security reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: bandit-report.json
+          if-no-files-found: ignore

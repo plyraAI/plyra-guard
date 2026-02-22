@@ -1,0 +1,34 @@
+{% if agents %}
+{% for a in agents %}
+<tr>
+    <td class="agent-dot {% if a.is_active %}agent-active{% else %}agent-idle{% endif %}">
+        {% if a.is_active %}<span class="dot">&#9679;</span>{% else %}&#9675;{% endif %}
+    </td>
+    <td>{{ a.agent_id | e }}</td>
+    <td>
+        <span
+            class="trust-badge {% if a.trust_level >= 0.8 %}trust-high{% elif a.trust_level >= 0.5 %}trust-med{% elif a.trust_level >= 0.3 %}trust-low{% else %}trust-danger{% endif %}">{{
+            "%.1f"|format(a.trust_level) }}</span>
+    </td>
+    <td>{{ a.total_actions }}</td>
+    <td>{{ a.blocked_count }} ({{ a.blocked_pct }}%)</td>
+    <td>
+        <svg width="80" height="6" viewBox="0 0 80 6">
+            <rect width="80" height="6" rx="3" fill="#1a3050" />
+            <rect width="{{ (a.budget_pct * 0.8)|int }}" height="6" rx="3"
+                fill="{% if a.over_budget %}#ff4444{% else %}#00f5ff{% endif %}" />
+        </svg>
+    </td>
+</tr>
+{% endfor %}
+{% else %}
+<tr>
+    <td colspan="6">
+        <div class="empty-state">
+            NO ACTIONS RECORDED<br><br>
+            Start your agent to see live data here.<br>
+            plyra-guard is active and listening.
+        </div>
+    </td>
+</tr>
+{% endif %}

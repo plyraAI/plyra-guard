@@ -1,0 +1,122 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "plyra-guard"
+version = "0.1.0"
+description = "Production-grade action middleware for agentic AI — by Plyra"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.11"
+authors = [{ name = "Plyra", email = "oss@plyra.dev" }]
+keywords = [
+    "ai",
+    "agents",
+    "llm",
+    "langchain",
+    "autogen",
+    "crewai",
+    "middleware",
+    "guardrails",
+    "safety",
+    "observability",
+    "multi-agent",
+    "agentic-ai",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: System :: Monitoring",
+    "Typing :: Typed",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "pydantic>=2.0",
+    "pyyaml>=6.0",
+    "python-dateutil",
+    "typing-extensions",
+]
+
+[project.optional-dependencies]
+sidecar = ["fastapi>=0.100.0", "uvicorn[standard]>=0.23.0", "httpx>=0.24.0"]
+otel = ["opentelemetry-sdk>=1.20.0", "opentelemetry-exporter-otlp>=1.20.0"]
+datadog = ["ddtrace>=2.0.0"]
+storage = ["boto3>=1.28.0"]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov",
+    "pytest-asyncio",
+    "ruff",
+    "mypy",
+    "pre-commit",
+]
+dashboard = [
+    "fastapi>=0.110",
+    "uvicorn[standard]",
+    "jinja2>=3.1",
+    "python-multipart",
+    "sse-starlette>=1.6",
+]
+all = [
+    "fastapi>=0.100.0",
+    "uvicorn[standard]>=0.23.0",
+    "httpx>=0.24.0",
+    "opentelemetry-sdk>=1.20.0",
+    "opentelemetry-exporter-otlp>=1.20.0",
+    "ddtrace>=2.0.0",
+    "boto3>=1.28.0",
+    "jinja2>=3.1",
+    "python-multipart",
+    "sse-starlette>=1.6",
+]
+
+[project.scripts]
+plyra-guard = "plyra_guard.cli:main"
+
+[project.urls]
+Homepage = "https://plyra.dev"
+Documentation = "https://docs.plyra.dev/guard"
+Repository = "https://github.com/plyra/plyra-guard"
+Issues = "https://github.com/plyra/plyra-guard/issues"
+Changelog = "https://github.com/plyra/plyra-guard/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+include = ["plyra_guard*", "plyra*"]
+
+[tool.setuptools.package-data]
+plyra_guard = ["py.typed", "dashboard/templates/**/*.html"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+asyncio_mode = "auto"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["E501", "E402"]
+"examples/**/*.py" = ["E501", "E402"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = false
+warn_unused_configs = true
+disallow_untyped_defs = false
+disable_error_code = ["import-untyped"]

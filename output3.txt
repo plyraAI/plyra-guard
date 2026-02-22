@@ -1,0 +1,18 @@
+============================================================
+ActionGuard — LangGraph Integration Example
+============================================================
+
+[INFO] Simulating a LangGraph state update containing two tool calls:
+       1. execute_command(command='rm -rf /')  <-- Should be BLOCKED
+       2. search_web(query='AI safety guidelines') <-- Should be ALLOWED
+
+[execute_command] Tool response:
+  --> Action blocked by policy: Destructive shell commands are forbidden
+
+[search_web] Tool response:
+  --> Results for: AI safety guidelines
+
+-- ActionGuard Audit Summary --
+
+============================================================
+Done!

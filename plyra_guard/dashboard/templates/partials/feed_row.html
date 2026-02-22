@@ -1,0 +1,17 @@
+<div id="row-{{ row.action_id }}" class="feed-row{% if row.rolled_back %} rolled-back{% endif %}">
+    <span class="feed-time">{{ row.timestamp.strftime('%H:%M:%S') }}</span>
+    <span class="feed-agent">{{ row.agent_id | e }}</span>
+    <span class="feed-action">{{ row.action_type | e }}</span>
+    <span
+        class="verdict-badge {% if row.verdict.value == 'ALLOW' %}v-allow{% elif row.verdict.value == 'BLOCK' %}v-block{% elif row.verdict.value == 'ESCALATE' %}v-escalate{% else %}v-warn{% endif %}">{{
+        row.verdict.value }}</span>
+    <span
+        class="feed-risk {% if row.risk_score > 0.8 %}risk-high{% elif row.risk_score >= 0.5 %}risk-mid{% else %}risk-low{% endif %}">risk:{{
+        "%.2f"|format(row.risk_score) }}</span>
+    {% if row.rolled_back %}
+    <span class="rb-label">ROLLED BACK</span>
+    {% elif row.has_rollback and not row.rolled_back %}
+    <button class="btn-rollback" hx-post="/dashboard/rollback/{{ row.action_id }}" hx-target="#row-{{ row.action_id }}"
+        hx-swap="outerHTML" hx-confirm="Roll back this action?">&crarr;</button>
+    {% endif %}
+</div>

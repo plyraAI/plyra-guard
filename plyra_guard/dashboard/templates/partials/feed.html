@@ -1,0 +1,11 @@
+{% if rows %}
+{% for row in rows %}
+{% include "partials/feed_row.html" %}
+{% endfor %}
+{% else %}
+<div class="empty-state">
+    NO ACTIONS RECORDED<br><br>
+    Start your agent to see live data here.<br>
+    plyra-guard is active and listening.
+</div>
+{% endif %}

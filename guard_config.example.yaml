@@ -1,0 +1,164 @@
+# ──────────────────────────────────────────────────────────────────
+# guard_config.example.yaml
+# ──────────────────────────────────────────────────────────────────
+# Full reference configuration for plyra-guard / ActionGuard.
+#
+# Copy this file to `guard_config.yaml` (or any path), then load it:
+#
+#     guard = ActionGuard.from_config("guard_config.yaml")
+#
+# Every key below is documented with its purpose and default value.
+# ──────────────────────────────────────────────────────────────────
+
+# Schema version — currently only "1.0" is supported.
+version: "1.0"
+
+# ── Global settings ──────────────────────────────────────────────
+# Top-level defaults that affect the entire pipeline.
+global:
+  # Verdict applied when no evaluator objects.
+  # Options: ALLOW | BLOCK | ESCALATE | WARN | DEFER
+  default_verdict: ALLOW
+
+  # Actions scoring above this threshold are auto-blocked.
+  # Range: 0.0 – 1.0
+  max_risk_score: 0.85
+
+  # Maximum hops in an agent → sub-agent delegation chain.
+  max_delegation_depth: 4
+
+  # Maximum outstanding delegations from one orchestrator.
+  max_concurrent_delegations: 10
+
+# ── Budget controls ──────────────────────────────────────────────
+# Cost is tracked per-task (shared across agents) and per-agent.
+budget:
+  # Max aggregate cost across all agents in one task.
+  per_task: 5.00
+
+  # Max cost a single agent may incur in one run.
+  per_agent_per_run: 1.00
+
+  # Display currency; does not affect enforcement.
+  currency: USD
+
+# ── Rate limits ──────────────────────────────────────────────────
+# Sliding-window rate limits for tool calls.
+# Format: "<max_calls>/<period>"  —  period = sec | min | hour | day
+rate_limits:
+  # Fallback applied to any tool without a per-tool entry.
+  default: 60/min
+
+  # Tool-specific overrides. Tool names may end in `*` for prefix matching.
+  per_tool:
+    email.send: 5/min
+    shell.exec: 10/min
+
+# ── Policies ─────────────────────────────────────────────────────
+# Declarative rules evaluated by the PolicyEngine.
+#
+# Fields:
+#   name           Unique policy name (used in logs and explain output).
+#   action_types   List of action type glob patterns to match.
+#                  Use ["*"] to match every action.
+#   condition      Python-like expression.
+#                  Available variables:
+#                    parameters.*         — intent parameters
+#                    estimated_cost       — projected cost of the action
+#                    agent.trust_level    — caller's trust score (0–1)
+#   verdict        BLOCK | ESCALATE | WARN
+#   escalate_to    "human" (only when verdict == ESCALATE)
+#   message        Human-readable explanation attached to blocked/escalated actions.
+policies:
+  - name: "block_system_paths"
+    action_types: ["file.delete", "file.write", "file.read"]
+    condition: "parameters.path.startswith('/etc') or parameters.path.startswith('/sys')"
+    verdict: BLOCK
+    message: "System path access is forbidden"
+
+  - name: "escalate_high_cost"
+    action_types: ["*"]
+    condition: "estimated_cost > 0.50"
+    verdict: ESCALATE
+    escalate_to: human
+    message: "Action cost exceeds $0.50 threshold"
+
+  - name: "pii_guard"
+    action_types: ["http.post", "http.put", "email.send"]
+    condition: "contains_pii(parameters)"
+    verdict: BLOCK
+    message: "Outbound PII detected"
+
+  - name: "sub_agent_email_approval"
+    action_types: ["email.send"]
+    condition: "agent.trust_level < 0.5"
+    verdict: ESCALATE
+    escalate_to: human
+
+# ── Agent identity ───────────────────────────────────────────────
+# Pre-register agents with trust levels and delegation permissions.
+#
+# Fields:
+#   id                Unique agent identifier (string).
+#   trust_level       Float 0.0 – 1.0 mapping to TrustLevel enum:
+#                       ≥ 0.9 → HUMAN
+#                       ≥ 0.7 → ORCHESTRATOR
+#                       ≥ 0.4 → PEER
+#                       > 0.0 → SUB_AGENT
+#                       0.0   → UNKNOWN
+#   can_delegate_to   Optional list of agent IDs this agent may call.
+#   max_actions_per_run  Action cap per run (default 100).
+agents:
+  - id: "orchestrator"
+    trust_level: 0.8
+    can_delegate_to: ["research-agent", "code-agent", "email-agent"]
+
+  - id: "research-agent"
+    trust_level: 0.6
+
+  - id: "code-agent"
+    trust_level: 0.5
+
+  - id: "email-agent"
+    trust_level: 0.3
+    max_actions_per_run: 5
+
+# ── Evaluators ───────────────────────────────────────────────────
+# Toggle individual pipeline evaluators.
+# Order is fixed by each evaluator's `priority` attribute.
+evaluators:
+  schema_validator:
+    enabled: true              # Validates intent schema
+  policy_engine:
+    enabled: true              # Runs declared policies above
+  risk_scorer:
+    enabled: true              # Calculates composite risk score
+  rate_limiter:
+    enabled: true              # Enforces rate limits above
+  cost_estimator:
+    enabled: true              # Budget enforcement
+  human_gate:
+    enabled: false             # Manual approval gate (interactive)
+
+# ── Rollback ─────────────────────────────────────────────────────
+# Controls the pre-execution snapshot and undo system.
+rollback:
+  enabled: true                # Set false to disable all rollback
+  snapshot_dir: null            # Directory for file-based overflow (optional)
+  max_snapshots: 1000          # In-memory cache size
+
+# ── Observability ────────────────────────────────────────────────
+# Audit log and export settings.
+observability:
+  # Active exporters. Options: stdout | otel (requires [otel] extras)
+  exporters:
+    - stdout
+
+  # Maximum audit entries kept in memory.
+  audit_log_max_entries: 10000
+
+# ── Sidecar HTTP server ──────────────────────────────────────────
+# Settings for `plyra-guard serve` / guard.serve().
+sidecar:
+  host: "0.0.0.0"
+  port: 8080
