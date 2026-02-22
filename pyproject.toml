@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=68.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "plyra-guard"
@@ -120,3 +120,16 @@ warn_return_any = false
 warn_unused_configs = true
 disallow_untyped_defs = false
 disable_error_code = ["import-untyped"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["plyra_guard"]
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+  "/.github",
+  "/tests",
+  "/docs",
+  "/examples",
+  "*.gitignore",
+  ".gitignore",
+]

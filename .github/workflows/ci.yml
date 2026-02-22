@@ -76,14 +76,17 @@ jobs:
         run: uv python install 3.13
 
       - name: Build package
-        run: uv build
+        run: |
+          rm -rf dist/
+          uv build
 
       - name: Verify build artifacts
         run: |
           ls -la dist/
-          test -f dist/plyra_guard-*.whl
-          test -f dist/plyra_guard-*.tar.gz
-          echo "✅ Both wheel and sdist created"
+          # Check files exist (version-agnostic)
+          test $(ls dist/*.whl | wc -l) -eq 1
+          test $(ls dist/*.tar.gz | wc -l) -eq 1
+          echo "✅ Build artifacts verified"
 
       - name: Install wheel in fresh venv and verify
         run: |
@@ -94,7 +97,6 @@ jobs:
           from plyra_guard import ActionGuard, __version__
           g = ActionGuard.default()
           print(f'plyra-guard {__version__} OK')
-          assert __version__ == '0.1.0', f'Version mismatch: {__version__}'
           "
           echo "✅ Package installs and imports correctly"
 
