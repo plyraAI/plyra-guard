@@ -1,292 +1,320 @@
-<p align="center">
-  <h1 align="center">🛡️ plyra-guard</h1>
-  <p align="center">
-    <em>Part of the <a href="https://plyra.dev">Plyra</a> agentic infrastructure suite.</em>
-  </p>
-  <p align="center">
-    <strong>Production-grade middleware for securing, observing, and controlling actions taken by AI agents.</strong>
-  </p>
-  <p align="center">
-    <a href="#"><img src="https://img.shields.io/pypi/v/plyra-guard?color=blue" alt="PyPI"></a>
-    <a href="#"><img src="https://img.shields.io/pypi/pyversions/plyra-guard" alt="Python Version"></a>
-    <a href="#"><img src="https://img.shields.io/badge/license-Apache--2.0-green" alt="License"></a>
-    <a href="#"><img src="https://img.shields.io/badge/tests-193%20passing-brightgreen" alt="Tests"></a>
-  </p>
-</p>
+<div align="center">
 
-```bash
-pip install plyra-guard
-```
+<img src="https://plyraai.github.io/plyra-guard/assets/logo.png" width="72" height="72" alt="Plyra" />
 
-Built by [Plyra](https://plyra.dev) — Infrastructure for Agentic AI.
+# plyra-guard
+
+**Production-grade action middleware for agentic AI**
+
+[![PyPI](https://img.shields.io/pypi/v/plyra-guard?color=2dd4bf&labelColor=0d1117&label=pypi)](https://pypi.org/project/plyra-guard)
+[![Python](https://img.shields.io/pypi/pyversions/plyra-guard?color=2dd4bf&labelColor=0d1117)](https://pypi.org/project/plyra-guard)
+[![Tests](https://img.shields.io/github/actions/workflow/status/plyraAI/plyra-guard/ci.yml?color=2dd4bf&labelColor=0d1117&label=tests)](https://github.com/plyraAI/plyra-guard/actions)
+[![License](https://img.shields.io/badge/license-Apache%202.0-2dd4bf?labelColor=0d1117)](LICENSE)
+[![Downloads](https://img.shields.io/pypi/dm/plyra-guard?color=2dd4bf&labelColor=0d1117)](https://pypi.org/project/plyra-guard)
+
+[Documentation](https://plyraai.github.io/plyra-guard) · [PyPI](https://pypi.org/project/plyra-guard) · [plyra.ai](https://plyraai.github.io)
+
+</div>
 
 ---
+
+AI agents are being deployed to take real-world actions — deleting files, calling APIs, sending emails. **There is no standard safety layer between the LLM's decision and execution.**
+
+`plyra-guard` is that layer. It intercepts every tool call your agent makes, evaluates it against your policy, and blocks, logs, or escalates — before anything irreversible happens.
+
+```python
+from plyra_guard import ActionGuard
+
+guard = ActionGuard()
+
+@guard.wrap
+def delete_file(path: str) -> str:
+    import os
+    os.remove(path)
+    return f"Deleted {path}"
+
+delete_file("/tmp/report.txt")   # ✓  ALLOW  0.3ms
+delete_file("/etc/passwd")       # ✗  BLOCK  "System config is off-limits"
+```
 
 ## Why plyra-guard?
 
-- **🔒 Every action passes through a security pipeline** — Intercept → Evaluate → Execute → Observe → Rollback. No unguarded tool calls.
-- **🤖 Works with any AI framework** — LangChain, LlamaIndex, CrewAI, AutoGen, OpenAI, Anthropic, or plain Python callables.
-- **🌐 Multi-agent native** — Trust ledgers, delegation tracking, cascade control, and cross-agent rollback built in from day one.
+- **Framework agnostic** — one-line wrap for LangGraph, AutoGen, CrewAI, LangChain, OpenAI, Anthropic, or plain Python
+- **Policy as code** — rules live in your repo, reviewed in PRs, tested in CI
+- **Zero latency budget** — evaluation happens in-process, no network hop, sub-2ms overhead
+- **Full audit log** — every action logged (allowed and blocked), ships to OTEL, Datadog, or your own sink
+- **Built-in dashboard** — real-time action feed, policy hit rates, session replay at `localhost:8765`
 
----
-
-## Quick Install
+## Installation
 
 ```bash
 pip install plyra-guard
 ```
 
-With optional features:
-```bash
-pip install plyra-guard[sidecar]    # HTTP sidecar server
-pip install plyra-guard[otel]       # OpenTelemetry export
-pip install plyra-guard[all]        # Everything
-```
+Optional extras:
 
----
+```bash
+pip install "plyra-guard[sidecar]"   # dashboard + REST API
+pip install "plyra-guard[otel]"      # OpenTelemetry exporter
+pip install "plyra-guard[datadog]"   # Datadog exporter
+pip install "plyra-guard[all]"       # everything
+```
 
 ## Quickstart
 
-### 1. Basic Decorator
+### 1. Wrap your tools
 
 ```python
-from plyra_guard import ActionGuard, RiskLevel
+from plyra_guard import ActionGuard
 
-guard = ActionGuard.default()
+guard = ActionGuard()
 
-@guard.protect("file.delete", risk_level=RiskLevel.HIGH)
-def delete_file(path: str) -> bool:
-    import os
-    os.remove(path)
-    return True
+@guard.wrap
+def read_file(path: str) -> str:
+    with open(path) as f:
+        return f.read()
 
-# Every call is intercepted, evaluated, and audited
-delete_file("/tmp/test.txt")
+@guard.wrap
+def write_file(path: str, content: str) -> str:
+    with open(path, "w") as f:
+        f.write(content)
+    return f"Written to {path}"
 ```
 
-### 2. Namespace Import
-
-```python
-# Both import styles work:
-from plyra_guard import ActionGuard      # direct
-from plyra.guard import ActionGuard      # namespace
-```
-
-### 3. Multi-Agent Orchestration
-
-```python
-from plyra_guard import ActionGuard, TrustLevel
-
-guard = ActionGuard.default()
-
-# Register agents with trust levels
-guard.register_agent("orchestrator", TrustLevel.ORCHESTRATOR)
-guard.register_agent("email-agent", TrustLevel.SUB_AGENT)
-guard.register_agent("code-agent", TrustLevel.PEER)
-
-# Context manager sets active agent
-with guard.set_task_context("task-001", "email-agent"):
-    send_email("boss@company.com", "Report", "...")
-
-# Roll back all actions in a task across all agents
-guard.rollback_task("task-001")
-```
-
-### 4. Policy Configuration (YAML)
+### 2. Define a policy
 
 ```yaml
-# guard_config.yaml
-version: "1.0"
+# policy.yaml
+version: "1"
+default_action: block
 
-policies:
-  - name: "block_system_paths"
-    action_types: ["file.delete", "file.write"]
-    condition: "parameters.path.startswith('/etc')"
-    verdict: BLOCK
-    message: "System path access is forbidden"
+rules:
+  - pattern: "\.env$"
+    action: block
+    reason: "No .env access"
 
-  - name: "escalate_high_cost"
-    action_types: ["*"]
-    condition: "estimated_cost > 0.50"
-    verdict: ESCALATE
-    message: "Requires human approval"
+  - pattern: "^/etc/"
+    action: block
+    reason: "System config is off-limits"
 
-agents:
-  - id: "orchestrator"
-    trust_level: 0.8
-    can_delegate_to: ["worker-1", "worker-2"]
+  - pattern: "^/tmp/"
+    action: allow
+
+  - pattern: "DROP TABLE"
+    action: escalate
+    reason: "Schema changes require human approval"
 ```
 
 ```python
-guard = ActionGuard.from_config("guard_config.yaml")
+guard = ActionGuard.from_config("policy.yaml")
 ```
 
----
+### 3. Query what happened
 
-## CLI
-
-```bash
-plyra-guard serve --config guard.yaml        # HTTP sidecar
-plyra-guard inspect --config guard.yaml      # Pipeline visualization
-plyra-guard explain --action file.delete     # Dry-run explanation
-plyra-guard test-policy --condition "..."    # Interactive policy testing
-plyra-guard version                          # Version info
-```
-
----
-
-## Supported Frameworks
-
-`plyra-guard` natively configures transparent adapters handling tool executions across the most popular multi-agent frameworks. Depending on your framework's internal architecture, the recommended integration pattern differs:
-
-| Framework | Recommended approach |
-|-----------|----------------------|
-| **LangChain** | `guard.wrap(tools)` |
-| **LangGraph** | Custom `GuardedToolNode` (see [examples/langgraph_integration.py](examples/langgraph_integration.py)) |
-| **AutoGen** | `guard.wrap([func])` + `register_function` |
-| **CrewAI** | `guard.wrap(tools)` |
-| **OpenAI / Anthropic** | `guard.wrap(tool_defs)` |
-| **Generic Python** | `@guard.protect()` decorator |
-
----
-
-## Architecture
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                        AI Agent / Framework                       │
-│  (LangChain, LlamaIndex, CrewAI, AutoGen, OpenAI, Anthropic)    │
-└─────────────────────────────┬────────────────────────────────────┘
-                              │ tool call
-                              ▼
-┌──────────────────────────────────────────────────────────────────┐
-│                      🛡️  plyra-guard                               │
-│                                                                   │
-│  ┌─────────┐  ┌──────────────────────────┐  ┌─────────────────┐ │
-│  │ Adapter  │→│   Evaluation Pipeline     │→│ Execution Gate  │ │
-│  │ Registry │  │                          │  │                 │ │
-│  │          │  │ 1. Schema Validator      │  │ • Pre/post hooks│ │
-│  │ • Lang-  │  │ 2. Policy Engine (YAML)  │  │ • Timeout mgmt  │ │
-│  │   Chain  │  │ 3. Risk Scorer (0.0-1.0) │  │ • Error capture │ │
-│  │ • OpenAI │  │ 4. Rate Limiter          │  │                 │ │
-│  │ • Custom │  │ 5. Cost Estimator        │  └────────┬────────┘ │
-│  └─────────┘  │ 6. Human Gate (optional)  │           │          │
-│               │ 7. Custom evaluators...   │           │          │
-│               └──────────────────────────┘           │          │
-│                                                       │          │
-│  ┌─────────────────┐  ┌───────────────┐  ┌──────────▼────────┐ │
-│  │  Multi-Agent     │  │   Rollback    │  │  Observability    │ │
-│  │                  │  │               │  │                   │ │
-│  │ • Trust Ledger   │  │ • Snapshots   │  │ • Audit Log       │ │
-│  │ • Instr. Chain   │  │ • File handler│  │ • OpenTelemetry   │ │
-│  │ • Cascade Ctrl   │  │ • DB handler  │  │ • Datadog         │ │
-│  │ • Global Budget  │  │ • HTTP comp.  │  │ • Webhooks        │ │
-│  └─────────────────┘  └───────────────┘  └───────────────────┘ │
-└──────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Features
-
-### Evaluation Pipeline
-Six built-in evaluators, fully pluggable:
-
-| Evaluator | Purpose |
-|-----------|---------|
-| `SchemaValidator` | Validates ActionIntent structure |
-| `PolicyEngine` | YAML policies with AST-compiled conditions |
-| `RiskScorer` | Dynamic risk score (0.0-1.0) from 5 signals |
-| `RateLimiter` | Per-agent, per-tool sliding window limits |
-| `CostEstimator` | Token + API cost budget enforcement |
-| `HumanGate` | Human-in-the-loop approval gate |
-
-Add your own:
 ```python
-from plyra_guard import BaseEvaluator, ActionIntent, EvaluatorResult, Verdict
-
-class MyEvaluator(BaseEvaluator):
-    @property
-    def name(self) -> str:
-        return "my_evaluator"
-
-    def evaluate(self, intent: ActionIntent) -> EvaluatorResult:
-        if "dangerous" in intent.parameters:
-            return EvaluatorResult(verdict=Verdict.BLOCK, reason="Dangerous parameter")
-        return EvaluatorResult(verdict=Verdict.ALLOW, reason="OK")
-
-guard.pipeline.add(MyEvaluator(), position="after_risk_scorer")
+for action in guard.history(limit=20, outcome="BLOCK"):
+    print(f"{action.tool_name} | {action.intent} | {action.latency_ms}ms")
 ```
 
-### Multi-Agent Support
-- **Trust Ledger** — Register agents with trust levels (HUMAN, ORCHESTRATOR, PEER, SUB_AGENT)
-- **Instruction Chain** — Immutable provenance tracking across delegation hops
-- **Cascade Controller** — Loop detection, depth limits, concurrent delegation caps
-- **Global Budget** — Cross-agent cost aggregation with gaming detection
+### 4. Launch the dashboard
 
-### Rollback System
-- Automatic pre-execution state snapshots
-- Built-in handlers for files, databases, and HTTP (compensation endpoints)
-- Cross-agent `rollback_task()` undoes actions in reverse order
-
-### HTTP Sidecar
-Language-agnostic access via HTTP:
 ```bash
-plyra-guard serve --config guard_config.yaml --port 8080
-
-curl -X POST http://localhost:8080/evaluate \
-  -H "Content-Type: application/json" \
-  -d '{"action_type": "file.read", "parameters": {"path": "/tmp/test"}, "agent_id": "my-agent"}'
+pip install "plyra-guard[sidecar]"
+plyra-guard serve
+# → http://localhost:8765
 ```
 
-### Important Defaults for Production
-When moving from local development to production, please note the following default behaviors:
-- **`StdoutExporter` is enabled by default in `DEFAULT_CONFIG`.** This means every action evaluated will print a JSON audit line to stdout. If this is too noisy for your production logs, override it in your YAML config by setting `observability.exporters: []` or switching to a `webhook` or `otel` exporter.
-- **The `SnapshotManager` persists state to `~/.plyra/snapshots.db`** (or your platform's default app data directory) via SQLite. This is designed to preserve rollback states dynamically, but ensures you are aware of local disk writes occurring automatically upon first initialization.
-- **The Sidecar HTTP `CORSMiddleware` uses `allow_origins=["*"]`.** This caters natively to seamless local dashboard development. In production deployments exposing the sidecar externally, ensure you mount it behind a strict API gateway or manually configure CORS constraints.
+## Framework Integrations
 
----
+### LangGraph
 
-## Documentation
+LangGraph's `ToolNode` uses internal state tracking that conflicts with transparent wrapping. Use a custom guarded node instead — this is the recommended pattern:
 
-| Guide | Description |
-|-------|-------------|
-| [Quickstart](docs/quickstart.md) | Get started in 5 minutes |
-| [Architecture](docs/architecture.md) | How plyra-guard works internally |
-| [Policy Reference](docs/policy_reference.md) | YAML policy syntax and built-in functions |
-| [Multi-Agent Guide](docs/multiagent_guide.md) | Trust, delegation, and cascading |
-| [Rollback Guide](docs/rollback_guide.md) | Snapshot and rollback system |
-| [Adapters](docs/adapters.md) | Framework integration details |
-| [API Reference](docs/api_reference.md) | Full public API documentation |
+```python
+from langchain_core.messages import ToolMessage
+from plyra_guard import ActionGuard
+from plyra_guard.exceptions import PolicyViolationError
 
----
+guard = ActionGuard()
+TOOLS = {"read_file": read_file_tool, "delete_file": delete_file_tool}
+
+def guarded_tool_node(state):
+    messages = []
+    for tool_call in state["messages"][-1].tool_calls:
+        intent = f"{tool_call['name']} {' '.join(str(v) for v in tool_call['args'].values())}"
+        try:
+            result = guard.evaluate(intent)
+            if result.outcome == "BLOCK":
+                content = f"[BLOCKED] {result.reason}"
+            else:
+                content = TOOLS[tool_call["name"]].invoke(tool_call["args"])
+        except Exception as e:
+            content = f"[ERROR] {e}"
+        messages.append(ToolMessage(content=str(content), tool_call_id=tool_call["id"]))
+    return {"messages": messages}
+```
+
+See [`examples/langgraph_integration.py`](examples/langgraph_integration.py) for a complete working graph.
+
+### AutoGen
+
+```python
+import autogen
+from plyra_guard import ActionGuard
+
+guard = ActionGuard()
+safe_tools = guard.wrap([read_file, delete_file])
+
+user_proxy = autogen.UserProxyAgent("user_proxy", human_input_mode="NEVER")
+for tool in safe_tools:
+    user_proxy.register_function(function_map={tool.__name__: tool})
+```
+
+Blocked calls return an error string into the conversation — the agent sees it and can course-correct. No crash, no infinite loop.
+
+### CrewAI
+
+```python
+from crewai_tools import tool
+from plyra_guard import ActionGuard
+
+guard = ActionGuard()
+
+@tool("Write Report")
+def write_report(path: str, content: str) -> str:
+    """Write a report to disk."""
+    with open(path, "w") as f:
+        f.write(content)
+    return f"Written to {path}"
+
+safe_tools = guard.wrap([write_report])
+
+agent = Agent(role="Analyst", tools=safe_tools, ...)
+```
+
+Blocked calls raise `ActionGuardExecutionError`, which CrewAI's task loop catches natively.
+
+### LangChain
+
+```python
+from plyra_guard import ActionGuard
+
+guard = ActionGuard()
+safe_tools = guard.wrap(tools)  # drop-in replacement
+
+agent = create_react_agent(llm, safe_tools, prompt)
+```
+
+### Plain Python / any framework
+
+```python
+# Decorator
+@guard.wrap
+def my_function(arg: str) -> str: ...
+
+# Direct wrap
+safe_fn = guard.wrap(some_function)
+
+# Wrap a list
+safe_tools = guard.wrap([tool1, tool2, tool3])
+```
+
+| Framework | Approach |
+|-----------|----------|
+| LangChain | `guard.wrap(tools)` |
+| LangGraph | Custom `guarded_tool_node` (see example) |
+| AutoGen | `guard.wrap([fn])` + `register_function` |
+| CrewAI | `guard.wrap(tools)` |
+| OpenAI | `guard.wrap(tool_defs)` |
+| Anthropic | `guard.wrap(tool_defs)` |
+| Plain Python | `@guard.wrap` decorator |
+
+## Policy Reference
+
+Rules are evaluated in order. First match wins.
+
+```python
+from plyra_guard import Policy, Rule
+
+policy = Policy(
+    default_action="block",   # fail closed by default
+    rules=[
+        Rule(pattern=r"^/etc/",    action="block",    reason="System config"),
+        Rule(pattern=r"\.env$",    action="block",    reason="No .env access"),
+        Rule(pattern=r"^/tmp/",    action="allow"),
+        Rule(pattern=r"DROP TABLE",action="escalate", reason="Needs human approval"),
+    ]
+)
+```
+
+| Action | Behaviour |
+|--------|-----------|
+| `allow` | Tool executes normally |
+| `block` | Tool not called, `PolicyViolationError` raised |
+| `escalate` | Paused pending human approval (async) |
+
+Test a policy without running anything:
+
+```python
+result = guard.evaluate("rm -rf /var/log")
+print(result.outcome)    # BLOCK
+print(result.reason)     # "No recursive deletes"
+print(result.latency_ms) # 0.4
+```
+
+## Observability
+
+```python
+from plyra_guard import ActionGuard
+from plyra_guard.exporters import OtelExporter, SidecarExporter
+
+guard = ActionGuard(exporters=[
+    OtelExporter(endpoint="http://localhost:4317"),
+    SidecarExporter(),   # streams to dashboard
+])
+```
+
+> **Note:** `StdoutExporter` is enabled by default. To disable it in production:
+> set `exporters=[]` or configure `observability.exporters: []` in your YAML config.
+
+## Configuration Notes
+
+- **Snapshot DB:** Action history is written to `~/.plyra/snapshots.db` on first import. Set `PLYRA_SNAPSHOT_PATH` to change the location.
+- **Dashboard CORS:** The sidecar defaults to `allow_origins=["*"]` — fine for localhost, lock it down if exposed beyond localhost in production.
+
+## Development
+
+```bash
+git clone https://github.com/plyraAI/plyra-guard
+cd plyra-guard
+uv sync --all-extras
+uv run pytest                    # 217 tests
+uv run ruff check .              # lint
+uv run mypy plyra_guard/         # types
+```
+
+## Project Status
+
+`plyra-guard` is in **beta** (v0.1.x). The API is stable but we may make minor breaking changes before v1.0 with appropriate deprecation notices.
+
+**Coming soon:** [`plyra-memory`](https://plyraai.github.io) — persistent episodic and semantic memory for agents. Watch the repo or follow [@plyraAI](https://twitter.com/plyraAI) for updates.
 
 ## Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+Issues and PRs are welcome. Please open an issue before starting significant work so we can discuss the approach.
 
-```bash
-git clone https://github.com/plyraAI/plyra-guard.git
-cd plyra-guard
-pip install -e ".[dev,sidecar]"
-pytest tests/ -v
-```
-
----
+- Run `ruff format` before committing
+- Add tests for new behaviour
+- Update `CHANGELOG.md`
 
 ## License
 
-Apache-2.0 License — see [LICENSE](LICENSE) for details.
+Apache 2.0 — see [LICENSE](LICENSE).
 
 ---
 
-plyra-guard is part of the Plyra suite.
-Explore the full stack at [plyra.dev](https://plyra.dev).
+<div align="center">
 
-| Library       | Purpose                    | Status    |
-|---------------|----------------------------|-----------|
-| plyra-guard   | Action safety middleware   | ✅ stable |
-| plyra-memory  | Tiered agent memory        | 🔜 soon  |
-| plyra-trace   | Observability & debugging  | 🔜 soon  |
-| plyra-budget  | Cost optimization          | 🔜 soon  |
-| plyra-mesh    | Multi-agent communication  | 🔜 soon  |
+Built by [Plyra](https://plyraai.github.io) · Infrastructure for agentic AI
+
+</div>
