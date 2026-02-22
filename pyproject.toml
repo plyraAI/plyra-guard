@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "plyra-guard"
-version = "0.1.5"
+version = "0.1.6"
 description = "Production-grade action middleware for agentic AI — by Plyra"
 readme = "README.md"
 license = { text = "Apache-2.0" }
