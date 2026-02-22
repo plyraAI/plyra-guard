@@ -91,9 +91,8 @@ jobs:
       - name: Install wheel in fresh venv and verify
         run: |
           uv venv /tmp/test_install
-          source /tmp/test_install/bin/activate
-          pip install dist/plyra_guard-*.whl
-          python -c "
+          uv pip install --python /tmp/test_install dist/plyra_guard-*.whl
+          /tmp/test_install/bin/python -c "
           from plyra_guard import ActionGuard, __version__
           g = ActionGuard.default()
           print(f'plyra-guard {__version__} OK')
