@@ -71,6 +71,10 @@ Thumbs.db
 # Temporary snapshot files created by FileRollbackHandler
 plyra_guard_snapshots_*/
 
+# Local logs and debug outputs
+*out*.txt
+error.txt
+
 # ── Docs Build ───────────────────────────────────────────────────
 site/
 docs/_build/
