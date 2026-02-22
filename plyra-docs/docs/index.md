@@ -12,7 +12,7 @@ Plyra Guard intercepts every tool call, evaluates it against your policy,
 and blocks, logs, or escalates — in under 2ms.
 </p>
 
-<div class="badge-strip">
+<div class="badge-strip" markdown="1">
 
 [![PyPI](https://img.shields.io/pypi/v/plyra-guard?color=2dd4bf&labelColor=0d1117)](https://pypi.org/project/plyra-guard)
 [![Python](https://img.shields.io/pypi/pyversions/plyra-guard?color=2dd4bf&labelColor=0d1117)](https://pypi.org/project/plyra-guard)
