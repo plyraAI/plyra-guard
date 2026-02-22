@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: plyra-guard
-Version: 0.1.0
+Version: 0.1.3
 Summary: Production-grade action middleware for agentic AI — by Plyra
 Author-email: Plyra <oss@plyra.dev>
 License: Apache-2.0
@@ -304,6 +304,12 @@ curl -X POST http://localhost:8080/evaluate \
   -H "Content-Type: application/json" \
   -d '{"action_type": "file.read", "parameters": {"path": "/tmp/test"}, "agent_id": "my-agent"}'
 ```
+
+### Important Defaults for Production
+When moving from local development to production, please note the following default behaviors:
+- **`StdoutExporter` is enabled by default in `DEFAULT_CONFIG`.** This means every action evaluated will print a JSON audit line to stdout. If this is too noisy for your production logs, override it in your YAML config by setting `observability.exporters: []` or switching to a `webhook` or `otel` exporter.
+- **The `SnapshotManager` persists state to `~/.plyra/snapshots.db`** (or your platform's default app data directory) via SQLite. This is designed to preserve rollback states dynamically, but ensures you are aware of local disk writes occurring automatically upon first initialization.
+- **The Sidecar HTTP `CORSMiddleware` uses `allow_origins=["*"]`.** This caters natively to seamless local dashboard development. In production deployments exposing the sidecar externally, ensure you mount it behind a strict API gateway or manually configure CORS constraints.
 
 ---
 
