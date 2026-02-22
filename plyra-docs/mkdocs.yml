@@ -1,9 +1,11 @@
-site_name: Plyra Guard
-site_description: Production-grade action middleware for agentic AI
+site_name: plyra-guard
+site_description: Production-grade action middleware for agentic AI by Plyra
+site_author: Plyra
 site_url: https://plyraai.github.io/plyra-guard
 repo_url: https://github.com/plyraAI/plyra-guard
 repo_name: plyraAI/plyra-guard
 edit_uri: edit/main/docs/
+copyright: Copyright &copy; 2026 Plyra
 
 theme:
   name: material
@@ -24,8 +26,8 @@ theme:
   font:
     text: DM Sans
     code: JetBrains Mono
-  logo: assets/logo-mark.svg
-  favicon: assets/favicon.svg
+  logo: assets/logo.png
+  favicon: assets/logo.png
   features:
     - navigation.tabs
     - navigation.tabs.sticky
