@@ -4,8 +4,8 @@ on:
   push:
     branches: [main]
     paths:
-      - "docs/**"
-      - "mkdocs.yml"
+      - "plyra-docs/docs/**"
+      - "plyra-docs/mkdocs.yml"
   workflow_dispatch:
 
 permissions:
@@ -31,4 +31,5 @@ jobs:
             mkdocs-autorefs
 
       - name: Build and deploy
+        working-directory: plyra-docs
         run: mkdocs gh-deploy --force
