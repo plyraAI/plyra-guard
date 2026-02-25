@@ -37,6 +37,28 @@ delete_file("/tmp/report.txt")   # ✓  ALLOW  0.3ms
 delete_file("/etc/passwd")       # ✗  BLOCK  "System config is off-limits"
 ```
 
+## Architecture
+
+```
+┌──────────────────────────────────────────────────────┐
+│                      Your Agent                       │
+│  (LangGraph / AutoGen / CrewAI / LangChain / Python)  │
+└───────────────────────────┬──────────────────────────┘
+                            │ tool calls
+                            ▼
+┌──────────────────────────────────────────────────────┐
+│                     plyra-guard                       │
+│  policy evaluation · risk scoring · audit log · rate  │
+│  limiting · escalation · rollback · dashboard         │
+└───────────────────────────┬──────────────────────────┘
+                            │ allowed calls only
+                            ▼
+┌──────────────────────────────────────────────────────┐
+│                        Tools                          │
+│  file_system · browser · code_exec · APIs · database  │
+└──────────────────────────────────────────────────────┘
+```
+
 ## Why plyra-guard?
 
 - **Framework agnostic** — one-line wrap for LangGraph, AutoGen, CrewAI, LangChain, OpenAI, Anthropic, or plain Python
@@ -128,7 +150,7 @@ plyra-guard serve
 
 ### LangGraph
 
-LangGraph's `ToolNode` uses internal state tracking that conflicts with transparent wrapping. Use a custom guarded node instead — this is the recommended pattern:
+LangGraph's `ToolNode` uses internal state tracking that conflicts with transparent wrapping. **Use `guarded_tool_node`, not `guard.wrap()`** — this is the recommended pattern:
 
 ```python
 from langchain_core.messages import ToolMessage
@@ -297,7 +319,7 @@ uv run mypy plyra_guard/         # types
 
 `plyra-guard` is in **beta** (v0.1.x). The API is stable but we may make minor breaking changes before v1.0 with appropriate deprecation notices.
 
-**Coming soon:** [`plyra-memory`](https://plyraai.github.io) — persistent episodic and semantic memory for agents. Watch the repo or follow [@plyraAI](https://twitter.com/plyraAI) for updates.
+**Also see:** [`plyra-memory`](https://plyraai.github.io/plyra-memory) — persistent episodic and semantic memory for agents. Groq-powered extraction, local-first, server-optional. Works alongside plyra-guard with no conflicts.
 
 ## Contributing
 

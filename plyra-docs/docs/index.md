@@ -94,6 +94,13 @@ delete_file("/etc/passwd")  # → PolicyViolationError
 | Anthropic | ✅ | Tool use interceptor |
 | Plain Python | ✅ | `@guard.wrap` decorator |
 
-## Coming Soon: plyra-memory
+## See also: plyra-memory
 
-Persistent, structured memory for AI agents — episodic context, semantic recall, and working state across sessions. Works with any agent framework. [Learn more at plyra.ai](https://plyraai.github.io) and star the [GitHub org](https://github.com/plyraAI) for updates.
+[`plyra-memory`](https://plyraai.github.io/plyra-memory) — persistent episodic and semantic memory for agents.
+Local-first, server-optional, Groq-powered extraction. Works alongside plyra-guard with no conflicts.
+
+```bash
+pip install plyra-memory
+```
+
+→ [plyra-memory docs](https://plyraai.github.io/plyra-memory) · [guard + memory integration](https://plyraai.github.io/plyra-memory/guard-integration/)
